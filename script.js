@@ -129,12 +129,12 @@ function spawnGardenItem() {
    5. INTERFACE DO ORBIT (LENTES E FALA)
 ========================================================================== 
 */
-function orbitTalk(text) {
+function orbitTalk(text, duration = 5000) {
     const speech = getEl('orbit-speech');
     if (!speech) return;
     speech.innerText = text;
     speech.classList.add('active');
-    setTimeout(() => speech.classList.remove('active'), 5000);
+    setTimeout(() => speech.classList.remove('active'), duration);
 }
 
 function setOrbitState(state) {
@@ -160,6 +160,71 @@ window.setMode = (mode) => {
         orbitTalk(`Lente de ${mode} ativada.`);
     }
 };
+
+/* ==========================================================================
+   5.1 CHAT REAL COM O ORBIT (IA via função serverless /api/orbit-chat)
+   Clique na imagem do Orbit abre uma caixinha pra digitar uma pergunta.
+   A resposta é gerada de verdade (Gemini), não é mais frase sorteada.
+========================================================================== 
+*/
+const orbitImg = getEl('orbit-img');
+const orbitChatBox = getEl('orbit-chat-box');
+const orbitChatInput = getEl('orbit-chat-input');
+const orbitChatSend = getEl('orbit-chat-send');
+
+if (orbitImg && orbitChatBox) {
+    orbitImg.style.cursor = 'pointer';
+    orbitImg.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const aberto = orbitChatBox.style.display === 'flex';
+        orbitChatBox.style.display = aberto ? 'none' : 'flex';
+        if (!aberto) orbitChatInput?.focus();
+    });
+    // Evita que clicar dentro da caixinha feche ela por engano
+    orbitChatBox.addEventListener('click', (e) => e.stopPropagation());
+}
+
+async function perguntarOrbit() {
+    const pergunta = orbitChatInput?.value.trim();
+    if (!pergunta) return;
+
+    orbitChatInput.value = '';
+    orbitChatInput.disabled = true;
+    if (orbitChatSend) orbitChatSend.disabled = true;
+    orbitTalk('Pensando... 🤔', 15000);
+
+    const contexto = timer
+        ? `Sessão de foco em andamento, faltam ${Math.floor(timeLeft / 60)} minutos.`
+        : 'Sem sessão de foco ativa no momento.';
+
+    try {
+        const resposta = await fetch('/api/orbit-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: pergunta, context: contexto })
+        });
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.reply) {
+            throw new Error(dados.error || 'Resposta vazia');
+        }
+
+        orbitTalk(dados.reply, 9000);
+    } catch (err) {
+        console.error('Erro ao falar com o Orbit AI:', err);
+        orbitTalk('Não consegui pensar agora... tenta de novo em instantes. 🛰️', 6000);
+    } finally {
+        orbitChatInput.disabled = false;
+        if (orbitChatSend) orbitChatSend.disabled = false;
+        orbitChatInput?.focus();
+    }
+}
+
+orbitChatSend?.addEventListener('click', perguntarOrbit);
+orbitChatInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') perguntarOrbit();
+});
 
 /* ==========================================================================
    6. CONTROLES DO TIMER (START/PAUSE)
@@ -435,12 +500,12 @@ getEl('save-agenda')?.addEventListener('click', () => {
 // e substitua os valores abaixo pelos seus (Service ID, Template ID e Public Key).
 // O destinatário (reinaldo.f.menezes@outlook.com) deve ser configurado como
 // "To Email" no template criado no painel do EmailJS.
-const EMAILJS_SERVICE_ID = "SEU_SERVICE_ID";
-const EMAILJS_TEMPLATE_ID = "SEU_TEMPLATE_ID";
-const EMAILJS_PUBLIC_KEY = "SUA_PUBLIC_KEY";
+const EMAILJS_SERVICE_ID = "service_ij7qn5j";
+const EMAILJS_TEMPLATE_ID = "template_esheohi";
+const EMAILJS_PUBLIC_KEY = "pdlsR8AzcJdzLL6pV";
 const COMMENTS_DESTINATION_EMAIL = "reinaldo.f.menezes@outlook.com";
 
-if (window.emailjs && EMAILJS_PUBLIC_KEY !== "SUA_PUBLIC_KEY") {
+if (window.emailjs) {
     window.emailjs.init(EMAILJS_PUBLIC_KEY);
 }
 
@@ -474,7 +539,7 @@ getEl('send-comment-btn')?.addEventListener('click', async () => {
         message: texto
     };
 
-    if (!window.emailjs || EMAILJS_PUBLIC_KEY === "SUA_PUBLIC_KEY") {
+    if (!window.emailjs) {
         if (statusMsg) statusMsg.innerText = "⚠️ Envio ainda não configurado (EmailJS).";
         orbitTalk("O envio de comentários ainda está sendo configurado. ⚙️");
         return;
