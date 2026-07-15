@@ -108,7 +108,16 @@ function spawnGardenItem() {
     item.innerText = emoji;
     item.style.setProperty('--orbit-duration', `25s`);
     item.style.setProperty('--orbit-distance', `170px`);
-    item.style.setProperty('--start-angle', `${gardenItemCount * 45}deg`);
+    // Ângulo áureo (~137,5°): distribui os itens de forma bem espaçada e,
+    // diferente de um passo fixo de 45°, praticamente nunca repete a mesma
+    // posição mesmo depois de muitos itens (evita que um novo ícone caia
+    // exatamente em cima de um antigo).
+    const angulo = (gardenItemCount * 137.5) % 360;
+    item.style.setProperty('--start-angle', `${angulo}deg`);
+    // Pequena variação no raio (independente do --orbit-distance, inclusive
+    // no mobile) só para garantir uma folga mínima entre os ícones.
+    const jitter = (gardenItemCount % 5) * 6 - 12; // varia entre -12px e +12px
+    item.style.setProperty('--orbit-jitter', `${jitter}px`);
     
 
     if (window.add3DPlant) add3DPlant(emoji);
@@ -157,11 +166,82 @@ window.setMode = (mode) => {
 ========================================================================== 
 */
 
+// Tutorial guiado de primeiro acesso: destaca o botão RESET e os
+// Ajustes Sensoriais. Só aparece uma vez por navegador (localStorage).
+function iniciarTutorial() {
+    if (localStorage.getItem('mindsphere_tutorial_visto')) return;
+
+    const passos = [
+        {
+            id: 'panic-btn',
+            texto: 'Este é o botão RESET. Um clique reinicia o timer e limpa o jardim. Dois cliques rápidos ativam o Modo Pânico: silencia os sons, some com as animações e deixa a tela em tons de cinza — pra quando você precisar de uma pausa sensorial rápida.'
+        },
+        {
+            id: 'sensory-trigger',
+            texto: 'Aqui ficam os Ajustes Sensoriais. Dá pra desativar as animações de fundo, o jardim orbitante, a fala do Orbit ou aplicar tons de cinza — deixe a tela do jeito mais confortável pra você.'
+        }
+    ];
+
+    const overlay = getEl('tutorial-overlay');
+    const spotlight = getEl('tutorial-spotlight');
+    const tooltip = getEl('tutorial-tooltip');
+    const textEl = getEl('tutorial-text');
+    const nextBtn = getEl('tutorial-next');
+    const skipBtn = getEl('tutorial-skip');
+    if (!overlay || !spotlight || !tooltip || !textEl || !nextBtn) return;
+
+    let indice = 0;
+
+    function posicionar() {
+        const passo = passos[indice];
+        const el = getEl(passo.id);
+        if (!el) { avancar(); return; }
+
+        const rect = el.getBoundingClientRect();
+        const folga = 8;
+        spotlight.style.top = `${rect.top - folga}px`;
+        spotlight.style.left = `${rect.left - folga}px`;
+        spotlight.style.width = `${rect.width + folga * 2}px`;
+        spotlight.style.height = `${rect.height + folga * 2}px`;
+
+        textEl.textContent = passo.texto;
+        nextBtn.textContent = (indice === passos.length - 1) ? 'Entendi!' : 'Próximo →';
+
+        let topoTooltip = rect.bottom + 20;
+        if (topoTooltip + 160 > window.innerHeight) topoTooltip = Math.max(10, rect.top - 170);
+        let esquerdaTooltip = Math.min(Math.max(rect.left, 10), window.innerWidth - 290);
+
+        tooltip.style.top = `${topoTooltip}px`;
+        tooltip.style.left = `${esquerdaTooltip}px`;
+    }
+
+    function avancar() {
+        indice++;
+        if (indice >= passos.length) return encerrar();
+        posicionar();
+    }
+
+    function encerrar() {
+        overlay.style.display = 'none';
+        window.removeEventListener('resize', posicionar);
+        localStorage.setItem('mindsphere_tutorial_visto', '1');
+    }
+
+    nextBtn.onclick = avancar;
+    if (skipBtn) skipBtn.onclick = encerrar;
+
+    overlay.style.display = 'block';
+    posicionar();
+    window.addEventListener('resize', posicionar);
+}
+
 if (startBtn) {
     startBtn.onclick = () => {
-        if (document.body.classList.contains('onboarding-active')) {
+        const primeiraVez = document.body.classList.contains('onboarding-active');
+        if (primeiraVez) {
             document.body.classList.remove('onboarding-active');
             getEl('mixer-anchor')?.appendChild(startBtn);
+            setTimeout(iniciarTutorial, 900);
         }
 
         if (!timer) {

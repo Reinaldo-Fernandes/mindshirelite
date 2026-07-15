@@ -309,17 +309,17 @@ header {
 
 @keyframes orbitMove {
     from {
-        /* 1. Mantém no centro | 2. Gira o eixo | 3. Empurra para fora | 4. Desgira o emoji (pra não ficar de ponta cabeça) */
+        /* 1. Mantém no centro | 2. Gira o eixo | 3. Empurra para fora (+ pequena variação) | 4. Desgira o emoji (pra não ficar de ponta cabeça) */
         transform: translate(-50%, -50%) 
                    rotate(var(--start-angle)) 
-                   translateX(var(--orbit-distance)) 
+                   translateX(calc(var(--orbit-distance) + var(--orbit-jitter, 0px))) 
                    rotate(calc(-1 * var(--start-angle)));
     }
     to {
         /* Gira 360 graus a partir do ângulo inicial */
         transform: translate(-50%, -50%) 
                    rotate(calc(var(--start-angle) + 360deg)) 
-                   translateX(var(--orbit-distance)) 
+                   translateX(calc(var(--orbit-distance) + var(--orbit-jitter, 0px))) 
                    rotate(calc(-1 * (var(--start-angle) + 360deg)));
     }
 }
@@ -1413,6 +1413,62 @@ body.admin-mode #user-title {
     color: white;
     font-family: inherit;
 }
+
+/* ==========================================================================
+   TUTORIAL GUIADO DE PRIMEIRO ACESSO
+   ========================================================================== */
+.tutorial-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20000;
+}
+
+.tutorial-spotlight {
+    position: fixed;
+    border-radius: 14px;
+    border: 2px solid var(--accent-cyan);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.78);
+    transition: all 0.4s ease;
+    pointer-events: none;
+}
+
+.tutorial-tooltip {
+    position: fixed;
+    max-width: 280px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 14px;
+    padding: 16px;
+    z-index: 20001;
+    transition: all 0.4s ease;
+}
+
+.tutorial-tooltip p {
+    margin: 0 0 14px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.tutorial-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.tutorial-skip {
+    background: none;
+    border: none;
+    color: white;
+    opacity: 0.5;
+    font-size: 0.7rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.tutorial-skip:hover { opacity: 0.9; }
 
 .glass-card {
     background: rgba(255, 255, 255, 0.05);
