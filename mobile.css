@@ -1,0 +1,223 @@
+/* ==========================================================================
+   CONFIGURAÇÕES GERAIS E RESPONSIVIDADE (Telas até 768px - Tablets e Celulares)
+   ========================================================================== */
+@media (max-width: 768px) {
+
+    /* --- Ajustes do Corpo da Página (Body) --- 
+       Permite rolagem vertical livre no celular, garante que o fundo 
+       cubra no mínimo 100% da altura da tela, e impede o scroll lateral 
+       (overflow-x) que estava sendo causado pelo mixer de áudio */
+    html, body {
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: auto;
+        min-height: 100vh;
+        max-width: 100vw;
+    }
+
+    /* --- Cabeçalho (Header) --- 
+       Modifica a barra do topo para que os botões quebrem em linhas (wrap) 
+       se não couberem, centralizando-os com um espaçamento seguro de 10px */
+    header {
+        padding: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    /* --- Logotipo "MindSphere" --- 
+       Força o logo a ocupar toda a largura da tela no mobile, ficando 
+       centralizado e posicionado no topo (com order: -1) */
+    .logo {
+        order: -1;
+        width: 100%;
+        text-align: center;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+
+    /* --- Container Principal (Grid/Flex Central) --- 
+       Muda a disposição do timer e das barras laterais de "linha" para "coluna".
+       Adiciona um espaçamento inferior de 140px para que os elementos não fiquem 
+       escondidos atrás do mixer de áudio que fica fixado no rodapé */
+    .container {
+        flex-direction: column;
+        padding: 0 15px;
+        gap: 20px;
+        margin-bottom: 140px; 
+    }
+
+    /* --- Esfera Central (Timer Pomodoro) --- 
+       Reduz o tamanho do círculo do timer para se adequar a telas menores, 
+       garantindo que ele fique centralizado horizontalmente */
+    .sphere-wrapper {
+        width: 220px;
+        height: 220px;
+        margin: 10px auto;
+    }
+
+    /* --- Texto do Timer --- 
+       Diminui o tamanho da fonte dos números (ex: 25:00) para caber na esfera reduzida */
+    #timer-display {
+        font-size: 2.8rem;
+    }
+
+    /* ==========================================================================
+       ASSISTENTE ORBIT & BOTÃO INICIAR (Durante o Onboarding)
+       ========================================================================== */
+       
+    /* --- Orbit Centralizado no Onboarding --- 
+       Quando a classe '.onboarding-active' está ativa no body, este bloco posiciona 
+       o assistente Orbit de forma fixa no centro da tela e bloqueia interações 
+       no container geral (pointer-events: none) para não atrapalhar o clique de fundo */
+   .onboarding-active .orbit-container {
+        position: absolute !important;
+        top: 57%;
+        left: 50%;
+        transform: translate(-50%, -10%) scale(1.1); 
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0px; 
+        z-index: 10000;
+        width: 100%;
+        pointer-events: none; 
+    }
+
+    /* --- Botão "Iniciar" dentro do Orbit --- 
+       Reativa os cliques especificamente para o botão (pointer-events: all) 
+       e estiliza-o com um efeito brilhante em ciano para destacar no mobile */
+    #start-btn {
+        pointer-events: all !important; 
+        padding: 12px 30px;
+        font-size: 1rem;
+        margin-top: 15px;
+        background: var(--accent-cyan);
+        box-shadow: 0 0 15px var(--accent-cyan);
+        border-radius: 25px;
+    }
+
+    /* --- Balão de Texto Introdutório (Onboarding) --- 
+       Estiliza a caixa de texto de boas-vindas do MindSphere.
+       No mobile, ela flutua levemente deslocada e traz um efeito de desfoque de vidro (glassmorphism) */
+    .orbit-intro-text {
+        position: absolute;
+        left: 15%; 
+        top: 15%;
+        transform: translateY(-100%); 
+        width: 200px;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 15px;
+        border-radius: 15px;
+        border-left: 4px solid var(--accent-cyan);
+        pointer-events: none; 
+        z-index: 50;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        animation: fadeInSlideRight 0.8s ease forwards;
+    }
+
+    /* --- Orbit em Estado Normal (Pós-Onboarding / Minimizado) --- 
+       Depois que o usuário inicia, o assistente é jogado para o canto inferior direito 
+       da tela de forma discreta (escala reduzida em 0.7) */
+    .orbit-container {
+        bottom: 80px;
+        right: 15px;
+        transform: scale(0.7);
+        z-index: 999;
+    }
+
+    /* ==========================================================================
+       MIXER DE ÁUDIO (Controle de Sons Ambientais no Rodapé)
+       ========================================================================== */
+
+    /* --- Painel do Mixer --- 
+       Fixa a barra de som de forma compacta no rodapé da tela com fundo escuro 
+       e translúcido, organizando os controles de som lado a lado.
+       box-sizing: border-box garante que o padding não some à largura e
+       estoure os 100% da tela (causa do scroll lateral) */
+    .mixer {
+        box-sizing: border-box;
+        width: calc(100vw - 20px);
+        max-width: 380px;
+        padding: 8px 10px;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 6px;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-around;
+        background: rgba(15, 32, 50, 0.9); 
+    }
+
+    /* --- Alinhamento do Ícone + Slider --- 
+       Garante que o emoji (chuva/fogo) e a barra de volume fiquem alinhados perfeitamente,
+       sem encolher e sem deixar o conjunto vazar da tela */
+    .sound-control {
+        width: auto;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* --- Largura do Slider (Barra de Volume) --- 
+       Reduz o comprimento da barra para caber os dois controles na mesma linha */
+    .sound-control input[type="range"] {
+        width: 45px; 
+        flex-shrink: 0;
+    }
+
+    /* --- Espaçador Central do Mixer --- 
+       Reserva um espaço no meio do mixer (onde fica o botão Iniciar/Pausar)
+       sem deixar ele espremer os controles de som para fora da tela */
+    #mixer-anchor {
+        width: 70px;
+        flex-shrink: 0;
+    }
+
+    #mixer-anchor .glass-btn.start {
+        padding: 8px 6px;
+        font-size: 0.65rem;
+    }
+} /* Fim do bloco @media principal */
+
+
+/* ==========================================================================
+   AJUSTES VISUAIS EXTRAS (Jardim Orbitante e Estilização de Sliders para Touch)
+   ========================================================================== */
+
+/* --- Ajuste das Plantas/Estrelas Orbitantes --- 
+   Aproxima os itens do jardim orbital (🌿/✨) para mais perto do timer no mobile, 
+   evitando que eles saiam para fora das bordas da tela */
+.garden-item {
+    --orbit-distance: 100px !important; 
+    font-size: 1.5rem;
+}
+
+/* --- Barra de Progresso do Volume (Slider Track) --- 
+   Remove a aparência padrão do sistema e define uma trilha fina, cinza e arredondada */
+.sound-control input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    outline: none;
+}
+
+/* --- Botão de Arrastar do Volume (Slider Thumb) --- 
+   Cria um círculo em ciano brilhante e maior, facilitando o toque com o dedo em telas mobile */
+.sound-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent-cyan);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--accent-cyan);
+}
