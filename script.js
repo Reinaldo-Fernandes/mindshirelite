@@ -191,34 +191,120 @@ if (startBtn) {
 ========================================================================== 
 */
 const breakBtn = getEl('break-task-btn');
+let goblinSteps = [];
+let goblinStepIndex = 0;
+
+// Templates de divisão por tipo de tarefa (detectados por palavra-chave).
+// Se nada bater, cai no fallback genérico (Preparar/Executar/Finalizar).
+const goblinTemplates = [
+    {
+        keywords: ['limpar', 'lavar', 'arrumar', 'organizar', 'faxina', 'guardar'],
+        steps: (t) => [
+            `Separar o que precisa pra: ${t}`,
+            `Fazer a parte principal: ${t}`,
+            `Guardar tudo e finalizar: ${t}`
+        ]
+    },
+    {
+        keywords: ['estudar', 'prova', 'ler', 'resumo', 'revisar', 'aula', 'exercicio', 'exercício'],
+        steps: (t) => [
+            `Abrir o material: ${t}`,
+            `Focar 15 min em: ${t}`,
+            `Fazer um resumo rápido de: ${t}`
+        ]
+    },
+    {
+        keywords: ['email', 'e-mail', 'responder', 'mensagem', 'ligar', 'ligação', 'ligacao', 'contato'],
+        steps: (t) => [
+            `Abrir e separar o que é urgente: ${t}`,
+            `Responder o mais importante primeiro: ${t}`,
+            `Organizar/arquivar o resto: ${t}`
+        ]
+    },
+    {
+        keywords: ['projeto', 'criar', 'escrever', 'desenhar', 'planejar', 'montar'],
+        steps: (t) => [
+            `Rascunhar a ideia: ${t}`,
+            `Colocar a mão na massa: ${t}`,
+            `Revisar e finalizar: ${t}`
+        ]
+    }
+];
+
+function gerarSubtarefas(texto) {
+    const textoLower = texto.toLowerCase();
+    const template = goblinTemplates.find(tpl => tpl.keywords.some(k => textoLower.includes(k)));
+    if (template) return template.steps(texto);
+    return [`Preparar: ${texto}`, `Executar: ${texto}`, `Finalizar: ${texto}`];
+}
+
+// Mostra só o passo atual (um card por vez), não a lista inteira,
+// pra reduzir a sobrecarga visual de ver tudo de uma vez.
+function renderGoblinStep() {
+    subtasksList.innerHTML = '';
+
+    if (goblinStepIndex >= goblinSteps.length) {
+        if (goblinSteps.length > 0) {
+            const done = document.createElement('div');
+            done.className = 'goblin-step-card goblin-step-done';
+            done.innerHTML = `<p>Tudo pronto! 🎉</p>`;
+            subtasksList.appendChild(done);
+            orbitTalk("Boa! Tarefa concluída em partes. 👹");
+        }
+        goblinSteps = [];
+        return;
+    }
+
+    const card = document.createElement('div');
+    card.className = 'goblin-step-card';
+
+    const counter = document.createElement('small');
+    counter.className = 'goblin-step-counter';
+    counter.textContent = `Passo ${goblinStepIndex + 1} de ${goblinSteps.length}`;
+
+    const text = document.createElement('p');
+    text.className = 'goblin-step-text';
+    text.textContent = goblinSteps[goblinStepIndex];
+
+    const doneBtn = document.createElement('button');
+    doneBtn.className = 'glass-btn';
+    doneBtn.style.width = '100%';
+    doneBtn.style.padding = '8px';
+    doneBtn.style.fontSize = '0.7rem';
+    doneBtn.textContent = 'Feito, próximo →';
+    doneBtn.onclick = () => {
+        card.style.opacity = '0.4';
+        setTimeout(() => {
+            goblinStepIndex++;
+            renderGoblinStep();
+        }, 400);
+    };
+
+    card.appendChild(counter);
+    card.appendChild(text);
+    card.appendChild(doneBtn);
+    subtasksList.appendChild(card);
+}
+
 if (breakBtn) {
     breakBtn.onclick = () => {
         const text = taskInput.value.trim();
         if (!text) return orbitTalk("Escreva algo para eu dividir! 👹");
-        
-        const parts = [`Preparar: ${text}`, `Executar: ${text}`, `Finalizar: ${text}`];
-        parts.forEach(t => {
-            const div = document.createElement('div');
-            div.className = 'subtask-item';
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            const span = document.createElement('span');
-            span.textContent = t;
-            div.appendChild(checkbox);
-            div.appendChild(document.createTextNode(' '));
-            div.appendChild(span);
-            checkbox.onchange = (e) => {
-                if (e.target.checked) {
-                    div.style.opacity = "0.5";
-                    setTimeout(() => div.remove(), 800);
-                }
-            };
-            subtasksList.appendChild(div);
-        });
+
+        goblinSteps = gerarSubtarefas(text);
+        goblinStepIndex = 0;
+        renderGoblinStep();
+
         taskInput.value = "";
         window.setMode('goblin');
     };
 }
+
+getEl('clear-tasks-btn')?.addEventListener('click', () => {
+    goblinSteps = [];
+    goblinStepIndex = 0;
+    subtasksList.innerHTML = '';
+});
 
 function setupAudio(sliderId, audioId) {
     const s = getEl(sliderId), a = getEl(audioId);

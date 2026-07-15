@@ -360,6 +360,36 @@ header {
     gap: 8px; max-height: 200px; overflow-y: auto;
 }
 
+/* Card de passo único do Goblin Mode: mostra só a tarefa atual, 
+   em vez de uma lista inteira, para reduzir sobrecarga visual */
+.goblin-step-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-left: 3px solid var(--accent-pink);
+    padding: 10px 12px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.goblin-step-counter {
+    font-size: 0.65rem;
+    opacity: 0.5;
+}
+
+.goblin-step-text {
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+.goblin-step-done {
+    text-align: center;
+    border-left-color: var(--accent-cyan);
+}
+
+.goblin-step-done p { margin: 0; opacity: 0.8; }
+
 .task-item {
     background: rgba(255, 69, 0, 0.1);
     padding: 10px; border-radius: 12px;
