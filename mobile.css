@@ -1,5 +1,8 @@
 /* ==========================================================================
    REGRA GLOBAL ANTI-OVERFLOW
+   Garante que padding/border nunca somem à largura declarada de nenhum
+   elemento. Sem isso, um único elemento com padding pode estourar 100vw
+   e criar a barra de rolagem lateral.
    ========================================================================== */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -10,7 +13,10 @@
    ========================================================================== */
 @media (max-width: 768px) {
 
-    /* --- Ajustes do Corpo da Página (Body) ---  */
+    /* --- Ajustes do Corpo da Página (Body) --- 
+       Permite rolagem vertical livre no celular, garante que o fundo 
+       cubra no mínimo 100% da altura da tela, e impede o scroll lateral 
+       (overflow-x) que estava sendo causado pelo mixer de áudio */
     html, body {
         overflow-y: auto;
         overflow-x: hidden;
@@ -20,7 +26,9 @@
         max-width: 100vw;
     }
 
-    /* --- Cabeçalho (Header) ---  */
+    /* --- Cabeçalho (Header) --- 
+       Modifica a barra do topo para que os botões quebrem em linhas (wrap) 
+       se não couberem, centralizando-os com um espaçamento seguro de 10px */
     header {
         padding: 10px;
         flex-wrap: wrap;
@@ -29,7 +37,9 @@
         width: 100%;
     }
 
-    /* --- Logotipo "MindSphere" ---  */
+    /* --- Logotipo "MindSphere" --- 
+       Força o logo a ocupar toda a largura da tela no mobile, ficando 
+       centralizado e posicionado no topo (com order: -1) */
     .logo {
         order: -1;
         width: 100%;
@@ -38,7 +48,10 @@
         margin-bottom: 5px;
     }
 
-    /* --- Container Principal (Grid/Flex Central) ---  */
+    /* --- Container Principal (Grid/Flex Central) --- 
+       Muda a disposição do timer e das barras laterais de "linha" para "coluna".
+       Adiciona um espaçamento inferior de 140px para que os elementos não fiquem 
+       escondidos atrás do mixer de áudio que fica fixado no rodapé */
     .container {
         flex-direction: column;
         padding: 0 15px;
@@ -69,7 +82,10 @@
        ASSISTENTE ORBIT & BOTÃO INICIAR (Durante o Onboarding)
        ========================================================================== */
        
-    /* --- Orbit Centralizado no Onboarding ---  */
+    /* --- Orbit Centralizado no Onboarding --- 
+       Quando a classe '.onboarding-active' está ativa no body, este bloco posiciona 
+       o assistente Orbit de forma fixa no centro da tela e bloqueia interações 
+       no container geral (pointer-events: none) para não atrapalhar o clique de fundo */
    .onboarding-active .orbit-container {
         position: absolute !important;
         top: 57%;
@@ -86,7 +102,9 @@
         pointer-events: none; 
     }
 
-    /* --- Botão "Iniciar" dentro do Orbit ---  */
+    /* --- Botão "Iniciar" dentro do Orbit --- 
+       Reativa os cliques especificamente para o botão (pointer-events: all) 
+       e estiliza-o com um efeito brilhante em ciano para destacar no mobile */
     #start-btn {
         pointer-events: all !important; 
         padding: 12px 30px;
@@ -97,7 +115,43 @@
         border-radius: 25px;
     }
 
-    /* --- Balão de Texto Introdutório (Onboarding) --- */
+    /* --- Painéis Laterais (Lentes / Goblin Mode) --- 
+       No style.css base, .side-panel tem width fixo de 200px — nunca foi
+       ajustado para mobile. Isso por si só cabia na maioria das telas, mas
+       travava esses painéis num tamanho fixo, sem se adaptar a telas menores
+       que ~240px de largura útil (com padding do .container). Aqui viram
+       fluidos: ocupam a largura disponível até um teto de 320px. */
+    .side-panel {
+        width: 100%;
+        max-width: 320px;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+    /* --- Campo de Tarefa (Goblin Mode) --- 
+       Base usa width:70%, pensado pra caber ao lado de um botão em linha.
+       No mobile o grupo já é flex-column, então o input pode ocupar 100%
+       do painel com segurança. */
+    #task-input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* --- Personagem do Orbit no Onboarding --- 
+       Base fixa .onboarding-active .orbit-character em 280px. Como o pai
+       (.orbit-container) já ocupa 100% da tela no mobile, isso na prática
+       cabia — mas sem teto, ele fica desproporcional em telas bem estreitas
+       (320px) e some a margem de segurança. Aqui ganha um limite fluido. */
+    .onboarding-active .orbit-character {
+        width: clamp(160px, 55vw, 240px);
+        max-width: 80vw;
+    }
+
+    /* --- Balão de Texto Introdutório (Onboarding) --- 
+       Estiliza a caixa de texto de boas-vindas do MindSphere.
+       No mobile, ela flutua levemente deslocada e traz um efeito de desfoque de vidro (glassmorphism).
+       Largura em % + max-width (em vez de px fixo) e "right" de segurança evitam
+       que o balão estoure a borda direita em telas estreitas. */
     .orbit-intro-text {
         position: absolute;
         left: 15%; 
@@ -119,7 +173,9 @@
         animation: fadeInSlideRight 0.8s ease forwards;
     }
 
-    /* --- Orbit em Estado Normal (Pós-Onboarding / Minimizado) --- */
+    /* --- Orbit em Estado Normal (Pós-Onboarding / Minimizado) --- 
+       Depois que o usuário inicia, o assistente é jogado para o canto inferior direito 
+       da tela de forma discreta (escala reduzida em 0.7) */
     .orbit-container {
         bottom: 80px;
         right: 15px;
@@ -132,7 +188,13 @@
        MIXER DE ÁUDIO (Controle de Sons Ambientais no Rodapé)
        ========================================================================== */
 
-    /* --- Painel do Mixer --- */
+    /* --- Painel do Mixer --- 
+       Fixa a barra de som de forma compacta no rodapé da tela com fundo escuro 
+       e translúcido, organizando os controles de som lado a lado.
+       box-sizing: border-box garante que o padding não some à largura e
+       estoure os 100% da tela (causa do scroll lateral).
+       Em telas muito estreitas, permite quebrar em 2 linhas em vez de
+       espremer/estourar os controles horizontalmente. */
     .mixer {
         box-sizing: border-box;
         width: calc(100vw - 20px);
@@ -143,42 +205,70 @@
         transform: translateX(-50%);
         gap: 6px;
         flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
         background: rgba(15, 32, 50, 0.9);
-        overflow: hidden;
+        /* Em vez de espremer ou quebrar linha, permite rolagem horizontal
+           SÓ dentro do mixer. Assim, mesmo com muitos sons, a página
+           nunca alarga — quem quiser ver os controles extras arrasta
+           o dedo dentro da barrinha, sem afetar o resto do layout. */
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox: esconde a barra de rolagem */
     }
 
-    /* --- Alinhamento do Ícone + Slider ---  */
+    /* Esconde a barra de rolagem no Chrome/Safari mobile, mantendo o
+       gesto de arrastar funcional (só some visualmente) */
+    .mixer::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* --- Alinhamento do Ícone + Slider --- 
+       Garante que o emoji (chuva/fogo) e a barra de volume fiquem alinhados perfeitamente,
+       sem encolher e sem deixar o conjunto vazar da tela */
     .sound-control {
         width: auto;
-        flex-shrink: 0;
+        flex-shrink: 0; /* nunca encolhe: se não couber, rola em vez de espremer */
         display: flex;
         align-items: center;
         gap: 5px;
     }
 
-    /* --- Largura do Slider (Barra de Volume) --- */
+    /* --- Largura do Slider (Barra de Volume) --- 
+       Tamanho fixo e confortável pro dedo — o scroll do .mixer é quem
+       resolve o espaço, não o encolhimento do slider */
     .sound-control input[type="range"] {
-        width: clamp(32px, 12vw, 45px);
-        flex-shrink: 1;
+        width: 45px;
+        flex-shrink: 0;
     }
 
-    /* --- Espaçador Central do Mixer ---  */
+    /* --- Espaçador Central do Mixer --- 
+       Reserva um espaço no meio do mixer (onde fica o botão Iniciar/Pausar).
+       Fica "grudado" (sticky) na primeira posição visível para não sumir
+       quando o usuário rola os sons pro lado. */
     #mixer-anchor {
-        width: clamp(56px, 18vw, 70px);
+        width: 60px;
         flex-shrink: 0;
+        position: sticky;
+        left: 0;
+        background: rgba(15, 32, 50, 0.95);
+        z-index: 2;
     }
 
     #mixer-anchor .glass-btn.start {
         padding: 8px 6px;
         font-size: 0.65rem;
     }
-}
+} /* Fim do bloco @media principal */
 
 
 /* ==========================================================================
    BREAKPOINT EXTRA — CELULARES PEQUENOS (até 380px)
+   Cobre aparelhos compactos (iPhone SE, alguns Android de entrada) que
+   ficam de fora da faixa 768px e são os que mais sofrem overflow lateral,
+   já que clamp() sozinho às vezes não é suficiente quando há muitos
+   controles lado a lado no mixer.
    ========================================================================== */
 @media (max-width: 380px) {
     .container {
@@ -220,7 +310,10 @@
 
 /* ==========================================================================
    BREAKPOINT EXTRA — TABLETS (769px a 1024px)
-
+   Sem essa faixa, tablets em modo retrato (iPad ~810-834px, Android ~800px)
+   caem no CSS de desktop e podem herdar larguras fixas que estouram a tela.
+   Aqui aplicamos uma versão intermediária: ainda em coluna, mas com
+   elementos maiores que no celular.
    ========================================================================== */
 @media (min-width: 769px) and (max-width: 1024px) {
     html, body {
@@ -254,16 +347,39 @@
 
 
 /* ==========================================================================
+   REDE DE SEGURANÇA — TRAVA GERAL CONTRA LARGURA FIXA ESQUECIDA
+   Vários elementos no style.css base têm width em pixel fixo (200px, 280px,
+   180px etc.) pensados só para desktop. Já cobrimos os principais acima,
+   mas esta regra é uma segurança adicional: qualquer um desses elementos
+   nunca pode, em hipótese alguma, ser mais largo que a tela no mobile.
+   ========================================================================== */
+@media (max-width: 768px) {
+    .side-panel,
+    .orbit-character,
+    .orbit-bubble,
+    .orbit-intro-text,
+    #task-input,
+    #mixer-anchor,
+    .glass-select {
+        max-width: 100%;
+    }
+}
+
+
+/* ==========================================================================
    AJUSTES VISUAIS EXTRAS (Jardim Orbitante e Estilização de Sliders para Touch)
    ========================================================================== */
 
-/* --- Ajuste das Plantas/Estrelas Orbitantes ---  */
+/* --- Ajuste das Plantas/Estrelas Orbitantes --- 
+   Aproxima os itens do jardim orbital (🌿/✨) para mais perto do timer no mobile, 
+   evitando que eles saiam para fora das bordas da tela */
 .garden-item {
     --orbit-distance: 100px !important; 
     font-size: 1.5rem;
 }
 
-/* --- Barra de Progresso do Volume (Slider Track) --- */
+/* --- Barra de Progresso do Volume (Slider Track) --- 
+   Remove a aparência padrão do sistema e define uma trilha fina, cinza e arredondada */
 .sound-control input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
@@ -273,7 +389,8 @@
     outline: none;
 }
 
-/* --- Botão de Arrastar do Volume (Slider Thumb) ---  */
+/* --- Botão de Arrastar do Volume (Slider Thumb) --- 
+   Cria um círculo em ciano brilhante e maior, facilitando o toque com o dedo em telas mobile */
 .sound-control input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 16px;
