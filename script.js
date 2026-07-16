@@ -2,8 +2,10 @@
    0. IMPORTS E CONFIGURAÇÕES INICIAIS
 ========================================================================== 
 */
+import { inject } from '@vercel/analytics';
 import { initThreeBackground, add3DPlant } from './visual.js';
 
+inject();
 initThreeBackground();
 
 
