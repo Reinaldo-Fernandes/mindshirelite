@@ -38,6 +38,7 @@ html, body {
    180px etc.) nunca pode ultrapassar a tela. Rede de segurança global. */
 img, svg, video, canvas, iframe,
 .side-panel, .orbit-character, .orbit-bubble, .orbit-intro-text,
+.orbit-container, #start-btn-container,
 .auth-card, .profile-card, .glass-select, #task-input, #mixer-anchor {
     max-width: 100%;
 }
@@ -142,12 +143,11 @@ header {
 
 .orbit-intro-text {
     position: absolute;
-    left: 15%;
-    right: 10px;
-    top: 15%;
-    transform: translateY(-100%);
-    width: auto;
-    max-width: min(200px, 60vw);
+    left: 50%;
+    top: 12%;
+    transform: translate(-50%, -100%);
+    width: min(220px, 80vw);
+    max-width: 80vw;
     text-align: left;
     padding: 15px;
     animation: fadeInSlideRight 0.8s ease forwards;
@@ -172,7 +172,13 @@ header {
 
 /* ==========================================================================
    4. MIXER DE ÁUDIO (rodapé fixo)
-   ========================================================================== */
+   ========================================================================== 
+   Estratégia nova: em vez de deixar o conteúdo "vazar" e criar uma barra
+   de rolagem interna (o que obrigava a arrastar pro lado pra ver os
+   controles), cada item agora ENCOLHE proporcionalmente (flex-shrink)
+   até um mínimo confortável de toque. Assim tudo sempre cabe numa linha
+   só, centralizado, em qualquer largura de tela — sem scroll nenhum.
+*/
 .mixer {
     width: calc(100vw - 20px);
     max-width: 380px;
@@ -183,30 +189,27 @@ header {
     gap: 6px;
     flex-direction: row;
     flex-wrap: nowrap;
-    justify-content: flex-start;
+    justify-content: center;
+    align-items: center;
     background: rgba(15, 32, 50, 0.9);
-    /* Se os controles de som não couberem numa linha, rola por dentro
-       do mixer em vez de forçar a página inteira a alargar */
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-}
-
-.mixer::-webkit-scrollbar {
-    display: none;
+    /* Nunca mais cria scroll interno — tudo precisa caber na largura acima */
+    overflow: visible;
 }
 
 .sound-control {
-    flex-shrink: 0;
+    flex: 1 1 auto;
+    min-width: 0; /* permite encolher abaixo do conteúdo intrínseco */
+    max-width: 110px;
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    gap: 4px;
 }
 
 .sound-control input[type="range"] {
-    width: 45px;
-    flex-shrink: 0;
+    flex: 1 1 auto;
+    min-width: 30px;
+    max-width: 55px;
     -webkit-appearance: none;
     appearance: none;
     height: 6px;
@@ -225,21 +228,22 @@ header {
     box-shadow: 0 0 8px var(--accent-cyan);
 }
 
-/* Botão Iniciar/Pausar: fica grudado (sticky) na borda esquerda do mixer
-   pra continuar visível mesmo se o usuário rolar os sons pro lado */
+/* Botão Iniciar/Pausar: fica sempre no centro do mixer, sem "sticky"
+   (esse recurso só fazia sentido quando a barra tinha scroll) */
 #mixer-anchor {
-    width: 60px;
-    flex-shrink: 0;
-    position: sticky;
-    left: 0;
-    background: rgba(15, 32, 50, 0.95);
-    z-index: 2;
+    flex: 0 1 auto;
+    min-width: 52px;
+    max-width: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #mixer-anchor .glass-btn.start {
     padding: 8px 6px;
     font-size: 0.65rem;
     white-space: nowrap;
+    width: 100%;
 }
 
 
@@ -318,11 +322,13 @@ header {
     }
 
     .sound-control input[type="range"] {
-        width: 28px;
+        min-width: 22px;
+        max-width: 40px;
     }
 
     #mixer-anchor {
-        width: 50px;
+        min-width: 44px;
+        max-width: 60px;
     }
 
     .onboarding-active .orbit-character {
