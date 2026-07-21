@@ -1,10 +1,12 @@
+![Mindsphere](https://raw.githubusercontent.com/Reinaldo-Fernandes/mindshirelite/efefea87a5e3000e39c5b916d8a22bc0124955bc/Mindsphere.png)
+
 # 🧠 MindSphere — Focus Ecosystem for Neurodivergent Minds
 
 > *"Productivity is not a straight line. Every brain has its own rhythm, its own pauses, and its own colors."*
 
 **MindSphere** is a focus environment designed specifically for neurodivergent individuals (ADHD, Autism, ODD, and OCD). Instead of the rigid, punishing structure of traditional productivity tools, it uses **adaptive design**, **immersive soundscapes**, and **sensory-aware UI patterns** to turn time management into a low-pressure, engaging experience.
 
-This is the **full version** of the project, including user accounts, cloud sync, and gamification. A lighter, no-login **Demo Edition** is also available — see [`README.demo.md`](./README.demo.md).
+This is the **full version** of the project, including user accounts, cloud sync, and gamification. A lighter, no-login **Demo Edition** is also available — see.
 
 ---
 
